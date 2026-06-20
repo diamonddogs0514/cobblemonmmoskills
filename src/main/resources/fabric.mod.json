@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "cobblemonmmoskills",
+  "version": "${version}",
+  "name": "cobblemonmmoskills",
+  "description": "Adds mcMMO-style gathering, combat, and Cobblemon progression skills with GUI stats and leaderboards.",
+  "authors": ["Foxhound"],
+  "contact": {
+    "sources": "https://github.com/"
+  },
+  "license": "GPL-3.0-only",
+  "icon": "assets/cobblemonmmoskills/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "jp.foxhound.cobblemonmmoskills.client.CobblemonmmoskillsClient"
+    ],
+    "main": [
+      "jp.foxhound.cobblemonmmoskills.Cobblemonmmoskills"
+    ]
+  },
+  "mixins": [
+    "cobblemonmmoskills.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}",
+    "cobblemon": ">=${cobblemon_version} <1.8.0"
+  }
+}
