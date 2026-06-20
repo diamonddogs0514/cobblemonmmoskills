@@ -6,7 +6,7 @@
   "description": "Adds mcMMO-style gathering, combat, and Cobblemon progression skills with GUI stats and leaderboards.",
   "authors": ["Foxhound"],
   "contact": {
-    "sources": "https://github.com/"
+    "sources": "https://github.com/diamonddogs0514/cobblemonmmoskills"
   },
   "license": "GPL-3.0-only",
   "icon": "assets/cobblemonmmoskills/icon.png",
