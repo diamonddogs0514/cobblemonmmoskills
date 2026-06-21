@@ -1,0 +1,66 @@
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
+    modImplementation "dev.architectury:architectury-neoforge:${rootProject.architectury_api_version}"
+    modCompileOnly("com.cobblemon:mod:${rootProject.cobblemon_version}") { transitive = false }
+    modImplementation("thedarkcolour:kotlinforforge-neoforge:5.3.0") {
+        exclude group: "net.neoforged.fancymodloader", module: "loader"
+    }
+    forgeRuntimeLibrary "org.jetbrains.kotlin:kotlin-stdlib:2.0.0"
+    forgeRuntimeLibrary "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.0.0"
+    forgeRuntimeLibrary "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.0"
+    forgeRuntimeLibrary "org.jetbrains.kotlin:kotlin-reflect:2.0.0"
+    modImplementation "com.cobblemon:neoforge:${rootProject.cobblemon_version}"
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", rootProject.minecraft_version
+    inputs.property "neoforge_version", rootProject.neoforge_version
+    inputs.property "neoforge_version_range", rootProject.neoforge_version_range
+    inputs.property "cobblemon_version", rootProject.cobblemon_version
+    filteringCharset = "UTF-8"
+
+    filesMatching("META-INF/neoforge.mods.toml") {
+        expand "version": project.version,
+            "minecraft_version": rootProject.minecraft_version,
+            "neoforge_version": rootProject.neoforge_version,
+            "neoforge_version_range": rootProject.neoforge_version_range,
+            "cobblemon_version": rootProject.cobblemon_version
+    }
+}
+
+jar {
+    dependsOn project(':common').tasks.named('transformProductionNeoForge')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from({
+        configurations.shadowBundle.collect { zipTree(it) }
+    }) {
+        exclude 'jp/foxhound/cobblemonmmoskills/gui/SkillGuiFactory*.class'
+    }
+    from(rootProject.file("LICENSE.txt")) {
+        rename { "${it}_${rootProject.archives_base_name}" }
+    }
+}

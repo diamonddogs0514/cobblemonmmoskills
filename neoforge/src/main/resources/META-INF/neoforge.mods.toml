@@ -1,0 +1,37 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "GPL-3.0-only"
+
+[[mods]]
+modId = "cobblemonmmoskills"
+version = "${version}"
+displayName = "cobblemonmmoskills"
+authors = "Foxhound"
+description = '''
+Adds mcMMO-style gathering, combat, and Cobblemon progression skills with GUI stats and leaderboards.
+'''
+logoFile = "assets/cobblemonmmoskills/icon.png"
+
+[[mixins]]
+config = "cobblemonmmoskills.mixins.json"
+
+[[dependencies.cobblemonmmoskills]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neoforge_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.cobblemonmmoskills]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${minecraft_version}]"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.cobblemonmmoskills]]
+modId = "cobblemon"
+type = "required"
+versionRange = "[1.7.0,1.8.0)"
+ordering = "AFTER"
+side = "BOTH"

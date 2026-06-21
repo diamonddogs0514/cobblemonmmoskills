@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import jp.foxhound.cobblemonmmoskills.gui.SkillGuiFactory;
+import jp.foxhound.cobblemonmmoskills.gui.SkillGuiBridge;
 import jp.foxhound.cobblemonmmoskills.state.SkillPersistentState;
 import jp.foxhound.cobblemonmmoskills.skill.AbilityType;
 import jp.foxhound.cobblemonmmoskills.skill.ActiveAbilityTracker;
@@ -159,12 +159,18 @@ public final class SkillCommand {
     }
 
     private static int openGui(ServerPlayer player) {
-        SkillGuiFactory.openMain(player);
-        return 1;
+        if (SkillGuiBridge.openMain(player)) {
+            return 1;
+        }
+
+        player.sendSystemMessage(Component.literal("GUI is not available in this environment. Showing text stats instead."));
+        return showAll(player);
     }
 
     private static int openLeaderboard(ServerPlayer player) {
-        SkillGuiFactory.openLeaderboard(player, 0);
+        if (!SkillGuiBridge.openLeaderboard(player, 0)) {
+            player.sendSystemMessage(Component.literal("GUI leaderboard is not available in this environment."));
+        }
         return 1;
     }
 

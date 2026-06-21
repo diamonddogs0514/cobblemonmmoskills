@@ -1,108 +1,75 @@
 plugins {
-    id 'java'
-    id 'dev.architectury.loom' version '1.11-SNAPSHOT'
-    id 'architectury-plugin' version '3.4-SNAPSHOT'
-    id 'org.jetbrains.kotlin.jvm' version '2.2.20'
-    id 'maven-publish'
+    id 'dev.architectury.loom' version '1.11-SNAPSHOT' apply false
+    id 'architectury-plugin' version '3.4-SNAPSHOT' apply false
+    id 'org.jetbrains.kotlin.jvm' version '2.2.20' apply false
 }
 
-version = project.mod_version
-group = project.maven_group
-
-architectury {
-    platformSetupLoomIde()
-    fabric()
-}
-
-base {
-    archivesName = project.archives_base_name
-}
-
-loom {
-    silentMojangMappingsLicense()
-
-    mixin {
-        defaultRefmapName.set("mixins.${project.name}.refmap.json")
+subprojects {
+    if (project.name == 'neoforge') {
+        project.extensions.extraProperties.set('loom.platform', 'neoforge')
+    } else {
+        project.extensions.extraProperties.set('loom.platform', 'fabric')
     }
-}
 
-repositories {
-    mavenCentral()
-    maven { url = 'https://artefacts.cobblemon.com/releases/' }
-    maven { url = 'https://maven.architectury.dev/' }
-    maven { url = 'https://www.cursemaven.com' }
-    maven { url = 'https://maven.nucleoid.xyz/' }
-}
+    apply plugin: 'java'
+    apply plugin: 'dev.architectury.loom'
+    apply plugin: 'architectury-plugin'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'maven-publish'
 
-dependencies {
-    minecraft "net.minecraft:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_language_kotlin_version}"
-    modImplementation "dev.architectury:architectury-fabric:${project.architectury_api_version}"
-    modImplementation "eu.pb4:sgui:1.6.1+1.21.1"
-    modCompileOnly("com.cobblemon:mod:${project.cobblemon_version}") { transitive = false }
-    modImplementation "com.cobblemon:fabric:${project.cobblemon_version}"
-    modLocalRuntime "eu.pb4:sgui:1.6.1+1.21.1"
-    modLocalRuntime "curse.maven:radical-cobblemon-trainers-api-1152792:${project.rctapi_file_id}"
-}
+    version = rootProject.mod_version
+    group = rootProject.maven_group
 
-processResources {
-    inputs.property "version", project.version
-    inputs.property "minecraft_version", project.minecraft_version
-    inputs.property "loader_version", project.loader_version
-    inputs.property "cobblemon_version", project.cobblemon_version
-    filteringCharset = "UTF-8"
-
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version,
-                "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version,
-                "cobblemon_version": project.cobblemon_version
+    base {
+        archivesName = "${rootProject.archives_base_name}-${project.name}"
     }
-}
 
-def targetJavaVersion = 21
-tasks.withType(JavaCompile).configureEach {
-    // ensure that the encoding is set to UTF-8, no matter what the system default is
-    // this fixes some edge cases with special characters not displaying correctly
-    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
-    // If Javadoc is generated, this must be specified in that task too.
-    it.options.encoding = "UTF-8"
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        it.options.release.set(targetJavaVersion)
+    repositories {
+        mavenCentral()
+        maven { url = 'https://artefacts.cobblemon.com/releases/' }
+        maven { url = 'https://maven.architectury.dev/' }
+        maven { url = 'https://maven.fabricmc.net/' }
+        maven { url = 'https://maven.neoforged.net/releases/' }
+        maven { url = 'https://www.cursemaven.com' }
+        maven { url = 'https://maven.nucleoid.xyz/' }
+        maven { url = 'https://thedarkcolour.github.io/KotlinForForge/' }
     }
-}
 
-java {
-    withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-}
+    loom {
+        silentMojangMappingsLicense()
 
-def archivesBaseNameValue = project.archives_base_name
-
-jar {
-    from("LICENSE.txt") {
-        rename { "${it}_${archivesBaseNameValue}" }
-    }
-}
-
-// configure the maven publication
-publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            artifactId = project.archives_base_name
-            from components.java
+        mixin {
+            useLegacyMixinAp.set(true)
+            defaultRefmapName.set("mixins.${project.getRootProject().property('archives_base_name')}.refmap.json")
         }
     }
 
-    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-    repositories {
-        // Add repositories to publish to here.
-        // Notice: This block does NOT have the same function as the block in the top level.
-        // The repositories here will be used for publishing your artifact, not for
-        // retrieving dependencies.
+    dependencies {
+        minecraft "net.minecraft:minecraft:${rootProject.minecraft_version}"
+        mappings loom.officialMojangMappings()
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = "UTF-8"
+        it.options.release.set(21)
+    }
+
+    java {
+        withSourcesJar()
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+}
+
+tasks.register('collectReleaseJars', Copy) {
+    dependsOn ':fabric:remapJar', ':neoforge:remapJar'
+    into layout.buildDirectory.dir('release')
+
+    from(project(':fabric').tasks.named('remapJar').flatMap { it.archiveFile }) {
+        rename { "${rootProject.archives_base_name}-${rootProject.minecraft_version}-fabric-${rootProject.mod_version}.jar" }
+    }
+
+    from(project(':neoforge').tasks.named('remapJar').flatMap { it.archiveFile }) {
+        rename { "${rootProject.archives_base_name}-${rootProject.minecraft_version}-neoforge-${rootProject.mod_version}.jar" }
     }
 }

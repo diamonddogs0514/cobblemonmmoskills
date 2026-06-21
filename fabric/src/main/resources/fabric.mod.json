@@ -16,7 +16,7 @@
       "jp.foxhound.cobblemonmmoskills.client.CobblemonmmoskillsClient"
     ],
     "main": [
-      "jp.foxhound.cobblemonmmoskills.Cobblemonmmoskills"
+      "jp.foxhound.cobblemonmmoskills.CobblemonmmoskillsFabric"
     ]
   },
   "mixins": [

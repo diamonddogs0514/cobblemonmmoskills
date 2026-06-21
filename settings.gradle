@@ -8,3 +8,6 @@ pluginManagement {
 }
 
 rootProject.name = 'cobblemonmmoskills'
+include 'common'
+include 'fabric'
+include 'neoforge'
